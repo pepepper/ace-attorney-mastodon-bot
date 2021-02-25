@@ -6,6 +6,7 @@ import tweepy
 import re
 import sched, time
 import os
+import ffmpeg
 
 import anim
 from comment_list_brige import Comment
@@ -20,6 +21,13 @@ def update_id(id):
     lastId = id
     with open('id.txt', 'w') as idFile:
         idFile.write(id)
+
+def postVideoTweet(reply_id, reply_name, filename):
+    uploaded_media = api.media_upload(filename, media_category='TWEET_VIDEO')
+    while (uploaded_media.processing_info['state'] == 'pending'):
+        time.sleep(uploaded_media.processing_info['check_after_secs'])
+        uploaded_media = api.get_media_upload_status(uploaded_media.media_id_string)
+    api.update_status('@' + reply_name + ' ', in_reply_to_status_id=reply_id, media_ids=[uploaded_media.media_id_string])
 
 def check_mentions():
     global lastId
@@ -43,13 +51,23 @@ def check_mentions():
                 most_common = [users_to_names[t[0]] for t in counter.most_common()]
                 characters = anim.get_characters(most_common)
                 output_filename = tweet.id_str + '.mp4'
+                # Animate Scene
                 anim.comments_to_scene(thread, characters, output_filename=output_filename)
+                # Split into 1:24 chunks
+                vinput = ffmpeg.input(output_filename)
+                out = ffmpeg.output(
+                    vinput,
+                    output_filename + "%03d.mp4",
+                    # segment_time="134"
+                    segment_time="10",
+                    codec="copy",
+                    segment_list=output_filename + ".txt",
+                    f="segment"
+                )
+                out.run()
+                sys.exit()
                 try:
-                    uploaded_media = api.media_upload(output_filename, media_category='TWEET_VIDEO')
-                    while (uploaded_media.processing_info['state'] == 'pending'):
-                        time.sleep(uploaded_media.processing_info['check_after_secs'])
-                        uploaded_media = api.get_media_upload_status(uploaded_media.media_id_string)
-                    api.update_status('@' + tweet.author.screen_name + ' ', in_reply_to_status_id=tweet.id_str, media_ids=[uploaded_media.media_id_string])
+                   postVideoTweet(tweet.id_str, tweet.author.screen_name, output_filename)
                 except tweepy.error.TweepError as e:
                     try:
                         api.update_status('@' + tweet.author.screen_name + ' ' + str(e), in_reply_to_status_id=tweet.id_str)
