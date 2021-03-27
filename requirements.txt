@@ -1,2 +1,1 @@
-# tweepy
-git+https://github.com/tweepy/tweepy@video-upload
+git+https://github.com/halcy/Mastodon.py

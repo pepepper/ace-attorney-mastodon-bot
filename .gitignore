@@ -2,3 +2,5 @@ id.txt
 keys.json
 __pycache__/
 assets/
+clientcred.secret
+usercred.secret

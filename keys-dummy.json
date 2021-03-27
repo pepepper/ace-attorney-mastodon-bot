@@ -1,6 +1,5 @@
-[{
-    "consumerApiKey": "DUMMY",
-    "consumerApiSecret": "DUMMY",
-    "accessToken": "DUMMY",
-    "accessTokenSecret": "DUMMY"
-}]
+{
+    "domain": "DUMMY",
+    "mail": "DUMMY",
+    "password": "DUMMY"
+}
