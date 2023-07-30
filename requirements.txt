@@ -1,1 +1,2 @@
 git+https://github.com/halcy/Mastodon.py
+opencv-python
